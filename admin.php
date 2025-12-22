@@ -24,12 +24,12 @@ if(!$magic_quotes_gpc)
 	$_FILES = $STR->format($_FILES);
 }
 
-require_once("class/mysql.db.class.php");
-$DB = new qgSQL($dbHost,$dbData,$dbUser,$dbPass,$dbOpenType);
+require_once("class/sqlite.db.class.php");
+$DB = new qgSQL($dbName,$dbData,$dbUser,$dbPass,$dbOpenType);
 
 include_once("class/file.class.php");
 $FS = new files();
-unset($dbHost,$dbData,$dbUser,$dbPass,$dbOpenType);
+unset($dbName,$dbData,$dbUser,$dbPass,$dbOpenType);
 
 session_start();
 
