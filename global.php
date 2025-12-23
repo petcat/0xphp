@@ -26,8 +26,8 @@ if(!$magic_quotes_gpc)
 
 session_start();
 #[加载数据库]
-require_once("class/mysql.db.class.php");
-$DB = new qgSQL($dbHost,$dbData,$dbUser,$dbPass,false);
+require_once("class/sqlite.db.class.php");
+$DB = new qgSQL($dbPath,false);
 
 #[加载管理语言包]
 require_once("class/lang.class.php");

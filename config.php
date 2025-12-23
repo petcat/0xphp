@@ -1,9 +1,6 @@
 <?php
-#[数据库信息]
-$dbHost = "localhost";
-$dbUser = "sinogacm_sino";
-$dbPass = "fCbe4B146772EE15";
-$dbData = "sinogacm_sino";
+#[数据库信息 - SQLite3]
+$dbPath = "data/database.sqlite3";
 
 #[数据表前缀]
 $prefix = "sino_";

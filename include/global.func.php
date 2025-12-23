@@ -54,7 +54,8 @@ function CheckCache($filename)
 function GetCateIdAll($langid)
 {
 	global $DB,$prefix;
-	$rs = $DB->qgGetAll("SELECT id FROM ".$prefix."category WHERE language='".LANGUAGE_ID."'");
+	$langid = intval($langid); // 确保LANGUAGE_ID是整数，防止SQL注入
+	$rs = $DB->qgGetAll("SELECT id FROM ".$prefix."category WHERE language='".$langid."'");
 	$rsid = array();
 	foreach($rs AS $key=>$value)
 	{
@@ -322,9 +323,10 @@ function HEAD()
 	}
 	else
 	{
-		$sql = "SELECT * FROM ".$prefix."nav WHERE language='".LANGUAGE_ID."' ORDER BY taxis ASC,id DESC";
+		$lang_id = intval(LANGUAGE_ID); // 防止SQL注入
+		$sql = "SELECT * FROM ".$prefix."nav WHERE language='".$lang_id."' ORDER BY taxis ASC,id DESC";
 		$qgnav = $DB->qgGetAll($sql);
-		$FS->qgWrite($qgnav,"data/nav_".$language.".php","qgnav");
+		$FS->qgWrite($qgnav,"data/nav_".$lang_id.".php","qgnav");
 	}
 	$TPL->set_var("qgnav",$qgnav);
 }
@@ -401,14 +403,15 @@ function SelectLangTpl()
 	$select .= "</select>";
 	$select .= "</td><td>";
 	$select .= "<select onchange='sys_change_tpl(this.value)'>";
-	if(file_exists("data/cache/style_select_".LANGUAGE_ID.".php"))
+	$lang_id = intval(LANGUAGE_ID); // 防止SQL注入
+	if(file_exists("data/cache/style_select_".$lang_id.".php"))
 	{
-		include_once("data/cache/style_select_".LANGUAGE_ID.".php");
+		include_once("data/cache/style_select_".$lang_id.".php");
 	}
 	else
 	{
-		$tpl_list = $DB->qgGetAll("SELECT folder,name FROM ".$prefix."tpl WHERE language='".LANGUAGE_ID."' ORDER BY isdefault DESC,taxis ASC,id DESC");
-		$FS->qgWrite($tpl_list,"data/cache/style_select_".LANGUAGE_ID.".php","tpl_list");
+		$tpl_list = $DB->qgGetAll("SELECT folder,name FROM ".$prefix."tpl WHERE language='".$lang_id."' ORDER BY isdefault DESC,taxis ASC,id DESC");
+		$FS->qgWrite($tpl_list,"data/cache/style_select_".$lang_id.".php","tpl_list");
 	}
 	foreach((is_array($tpl_list) ? $tpl_list : array()) AS $key=>$value)
 	{
