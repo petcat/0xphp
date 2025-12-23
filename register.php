@@ -27,18 +27,19 @@ if($act == "regok")
 	{
 		Error($langs["reg_emptyemail"],"register.php");
 	}
-	if(!ereg("^[-a-zA-Z0-9_\.]+\@([0-9A-Za-z][0-9A-Za-z-]+\.)+[A-Za-z]{2,5}$",$email))
+	if(!filter_var($email, FILTER_VALIDATE_EMAIL))
 	{
 		Error($langs["reg_erroremail"],"register.php");
 	}
-	$check_user = $DB->qgGetOne("SELECT * FROM ".$prefix."user WHERE user='".$username."'");
+	$check_user = $DB->qgGetOne("SELECT * FROM ".$prefix."user WHERE user=? LIMIT 1", [$username]);
 	if($check_user)
 	{
 		Error($langs["reg_user_exist"],"register.php");
 	}
-	$password = md5($password);
-	$id = $DB->qgInsert("INSERT INTO ".$prefix."user(user,nickname,realname,pass,email,regdate) VALUES('".$username."','".$username."','','".$password."','".$email."','".$system_time."')");
-	$id = $DB->qgInsertID();
+	$hashed_password = password_hash($password, PASSWORD_DEFAULT);
+	$id = $DB->qgInsert("INSERT INTO ".$prefix."user(user,nickname,realname,pass,email,regdate) VALUES(?,?,?,?,?,?)", [$username, $username, "", $hashed_password, $email, $system_time]);;
+	$user_info = $DB->qgGetOne("SELECT id FROM ".$prefix."user WHERE user=? LIMIT 1", [$username]);
+        $id = $user_info["id"];
 	#[直接登录]
 	$_SESSION["qg_sys_user"]["id"] = $id;
 	$_SESSION["qg_sys_user"]["user"] = $username;
