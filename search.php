@@ -19,6 +19,8 @@ if($sysact == "searchok")
 	$stype = SafeHtml($_GET["stype"]);
 	if($stype)
 	{
+		# 使用参数化查询或验证输入
+		$stype = $DB->qgEscapeString($stype);
 		$sql = "SELECT c.id FROM ".$prefix."category AS c,".$prefix."sysgroup AS s WHERE s.sign='".$stype."' AND c.sysgroupid=s.id AND c.status='1' AND c.language='".LANGUAGE_ID."'";
 	}
 	else
@@ -40,6 +42,8 @@ if($sysact == "searchok")
 	define("QGLIST_ID",0);#[定义常量QGLIST_ID]
 	define("QGLIST_IDIN",$idin);#[定义常量QGLIST_IDIN，以供模块调用]
 	#[]
+	# 验证并过滤keywords以防止SQL注入
+	$keywords = $DB->qgEscapeString($keywords);
 	$condition = " FROM ".$prefix."msg AS m,".$prefix."category AS c WHERE m.cateid in(".$idin.") AND m.ifcheck='1' AND m.subject LIKE '%".$keywords."%' AND m.cateid=c.id";
 	$count = intval($_GET["count"]);
 	if(!$count || $count<1)

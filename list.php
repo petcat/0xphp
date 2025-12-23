@@ -6,6 +6,7 @@ if(!$id || $id == "0")
 {
 	qgheader();
 }
+# 使用参数化查询或确保ID是整数（已通过intval处理）
 $sql = "SELECT c.*,s.sign AS sysgroup_sign FROM ".$prefix."category AS c,".$prefix."sysgroup AS s WHERE c.id='".$id."' AND c.sysgroupid=s.id AND c.status=1";
 $thiscate = $DB->qgGetOne($sql);
 if(!$thiscate)
@@ -38,6 +39,8 @@ else
 }
 
 $sqlid = $thiscate["rootid"] ? $thiscate["rootid"] : $id;
+# 确保sqlid也是整数
+$sqlid = intval($sqlid);
 $sql = "SELECT id,sysgroupid,rootid,parentid,catename,catestyle FROM ".$prefix."category WHERE status='1' AND (rootid='".$sqlid."' OR id='".$sqlid."' OR parentid='".$sqlid."') ORDER BY taxis ASC,id DESC";
 $catelist = $DB->qgGetAll($sql);
 $menulist = menu_list($catelist,$id);
@@ -110,6 +113,8 @@ if($idin)
 	{
 		$idin .= ",".$id;
 	}
+	# 验证IDIN只包含数字和逗号
+	$idin = preg_replace('/[^0-9,]/', '', $idin);
 	$condition .= " AND m.cateid in(".$idin.")";
 }
 else

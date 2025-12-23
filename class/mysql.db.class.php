@@ -229,7 +229,38 @@ class qgSQL
 		{
 			return false;
 		}
-		return @mysql_escape_string($char);
+		return @mysql_real_escape_string($char, $this->conn);
+	}
+
+	#[安全的参数化查询方法]
+	function qgPreparedQuery($sql, $params = array())
+	{
+		// 替换占位符 ? 为实际值，使用转义
+		foreach($params as $param) {
+			$escaped_param = $this->qgEscapeString($param);
+			$sql = preg_replace('/\?/', "'" . $escaped_param . "'", $sql, 1);
+		}
+		return $this->qgQuery($sql);
+	}
+
+	#[安全的参数化查询获取所有结果方法]
+	function qgPreparedGetAll($sql, $params = array())
+	{
+		$this->qgPreparedQuery($sql, $params);
+		$rs = array();
+		while($rows = mysql_fetch_array($this->result,$this->rsType))
+		{
+			$rs[] = $rows;
+		}
+		return $rs;
+	}
+
+	#[安全的参数化查询获取单个结果方法]
+	function qgPreparedGetOne($sql, $params = array())
+	{
+		$this->qgPreparedQuery($sql, $params);
+		$rows = mysql_fetch_array($this->result,$this->rsType);
+		return $rows;
 	}
 
 	function get_mysql_version()

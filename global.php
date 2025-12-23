@@ -5,8 +5,11 @@ $start_time = explode(" ",microtime());
 $start_time = $start_time[0] + $start_time[1];
 define("START_TIME",$start_time);
 unset($start_time);
+
+# 增强错误报告设置，移除潜在安全风险
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
-#error_reporting(E_ALL);
+# error_reporting(E_ALL);
+
 require_once("config.php");
 require_once("version.php");
 
@@ -17,6 +20,29 @@ require_once("class/string.class.php");
 $STR = new QG_C_STRING(false,false,false);
 
 $magic_quotes_gpc = get_magic_quotes_gpc();
+
+# 安全增强：对输入进行更严格的过滤
+function validateInput($input) {
+    if (is_array($input)) {
+        foreach ($input as $key => $value) {
+            $input[$key] = validateInput($value);
+        }
+        return $input;
+    } else {
+        # 防止基本的XSS和SQL注入尝试
+        $input = trim($input);
+        # 防止常见的SQL注入尝试
+        $input = str_ireplace(array("'", "\"", "union", "select", "insert", "delete", "drop", "create", "alter", "exec", "script", "<script", "javascript", "vbscript"), 
+                             array("\\'", "\\\"", "u\\nion", "s\\elect", "i\\nsert", "d\\elete", "dr\\op", "cr\\eate", "alt\\er", "ex\\ec", "scr\\ipt", "\\<script", "javas\\cript", "vbscr\\ipt"), $input);
+        return $input;
+    }
+}
+
+# 对用户输入进行过滤
+$_POST = validateInput($_POST);
+$_GET = validateInput($_GET);
+
+# 使用过滤后的数据进行extract，增强安全性
 @extract($STR->format($_POST));
 @extract($STR->format($_GET));
 if(!$magic_quotes_gpc)

@@ -15,9 +15,30 @@ function qgheader($url="home.php")
 {
 	global $TPL;
 	$url = $url ? $url : "home.php";
+	// 验证URL是否为安全的内部URL，防止开放重定向
+	if (!is_safe_redirect_url($url)) {
+		$url = "home.php";
+	}
 	ob_end_clean();
 	header("Location:".$url);
 	exit;
+}
+
+// 验证重定向URL的安全性
+function is_safe_redirect_url($url) {
+	// 检查是否包含协议，如果是外部URL则不安全
+	if (preg_match('/^https?:\/\/|^\/\//i', $url)) {
+		// 如果是外部URL，只允许当前域名
+		$host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+		if (!preg_match('/^https?:\/\/' . preg_quote($host, '/') . '/i', $url)) {
+			return false;
+		}
+	}
+	// 检查是否包含危险字符
+	if (strpos($url, '..') !== false || strpos($url, '<') !== false || strpos($url, '>') !== false) {
+		return false;
+	}
+	return true;
 }
 
 function ErrorMsg($msg="操作不正确")
@@ -197,12 +218,16 @@ function page($url,$total=0,$psize=30,$pageid=0,$halfPage=5)
 function SafeHtml($msg="")
 {
 	global $STR;
+	// 验证输入防止XSS
+	$msg = validateInput($msg);
 	return $STR->safe($msg);
 }
 
 function FckHtml($msg="",$script=false,$iframe=false,$style=false)
 {
 	global $STR;
+	// 验证输入防止XSS
+	$msg = validateInput($msg);
 	$STR->set("script",$script);
 	$STR->set("iframe",$iframe);
 	$STR->set("style",$style);
@@ -212,6 +237,8 @@ function FckHtml($msg="",$script=false,$iframe=false,$style=false)
 function CutString($string,$length=10,$dot="…")
 {
 	global $STR;
+	// 验证输入防止XSS
+	$string = validateInput($string);
 	return $STR->cut($string,$length,$dot);
 }
 
