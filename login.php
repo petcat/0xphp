@@ -3,17 +3,25 @@
 require_once("global.php");
 if($act == "loginok")
 {
-	$username = SafeHtml($username);
-	$password = SafeHtml($password);
-	if(!$username)
+	// 使用更严格的输入验证
+	$username = isset($_POST['username']) ? trim($_POST['username']) : '';
+	$password = isset($_POST['password']) ? trim($_POST['password']) : '';
+	
+	// 验证输入格式
+	if(!$username || !preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username))
 	{
 		Error($langs["empty_user"],"login.php");
 	}
-	if(!$password)
+	if(!$password || strlen($password) < 6)
 	{
 		Error($langs["empty_pass"],"login.php");
 	}
-	$rs = $DB->qgGetOne("SELECT id,user,pass,email FROM ".$prefix."user WHERE user='".$username."' AND pass='".md5($password)."'");
+	
+	// 使用转义防止SQL注入
+	$username = mysql_real_escape_string($username);
+	$password_hash = md5($password);
+	
+	$rs = $DB->qgGetOne("SELECT id,user,pass,email FROM ".$prefix."user WHERE user='".$username."' AND pass='".$password_hash."'");
 	if(!$rs)
 	{
 		Error($langs["notuser"],"login.php");

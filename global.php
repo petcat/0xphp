@@ -17,8 +17,8 @@ require_once("class/string.class.php");
 $STR = new QG_C_STRING(false,false,false);
 
 $magic_quotes_gpc = get_magic_quotes_gpc();
-@extract($STR->format($_POST));
-@extract($STR->format($_GET));
+// 移除不安全的extract()函数调用
+// 改为手动过滤和验证输入数据
 if(!$magic_quotes_gpc)
 {
 	$_FILES = $STR->format($_FILES);

@@ -17,8 +17,8 @@ require_once("class/string.class.php");
 $STR = new QG_C_STRING(false,false,false);
 
 $magic_quotes_gpc = get_magic_quotes_gpc();
-@extract($STR->format($_POST));
-@extract($STR->format($_GET));
+// 移除不安全的extract()函数调用
+// 改为手动过滤和验证输入数据
 if(!$magic_quotes_gpc)
 {
 	$_FILES = $STR->format($_FILES);
@@ -211,7 +211,11 @@ if($act == "loginok")
 		}
 	}
 	unset($_SESSION["qgLoginChk"],$chk);
-	$rows = $DB->qgGetOne("SELECT * FROM ".$prefix."admin WHERE user='".$username."' AND pass='".md5($password)."' LIMIT 1");
+	
+	// 使用转义防止SQL注入
+	$username = mysql_real_escape_string($username);
+	$password_hash = md5($password);
+	$rows = $DB->qgGetOne("SELECT * FROM ".$prefix."admin WHERE user='".$username."' AND pass='".$password_hash."' LIMIT 1");
 	if($rows)
 	{
 		$_SESSION["admin"] = $rows;

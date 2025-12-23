@@ -1,9 +1,9 @@
 <?php
 #[数据库信息]
-$dbHost = "localhost";
-$dbUser = "sinogacm_sino";
-$dbPass = "fCbe4B146772EE15";
-$dbData = "sinogacm_sino";
+$dbHost = $_ENV['DB_HOST'] ?? "localhost";
+$dbUser = $_ENV['DB_USER'] ?? "sinogacm_sino";
+$dbPass = $_ENV['DB_PASS'] ?? "fCbe4B146772EE15";
+$dbData = $_ENV['DB_NAME'] ?? "sinogacm_sino";
 
 #[数据表前缀]
 $prefix = "sino_";

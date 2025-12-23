@@ -3,14 +3,17 @@
 require_once("global.php");
 if($act == "regok")
 {
-	$username = SafeHtml($username);
-	if(!$username)
+	// 使用更严格的输入验证
+	$username = isset($_POST['username']) ? trim($_POST['username']) : '';
+	$password = isset($_POST['password']) ? trim($_POST['password']) : '';
+	$chkpass = isset($_POST['checkpass']) ? trim($_POST['checkpass']) : '';
+	$email = isset($_POST['email']) ? trim($_POST['email']) : '';
+	
+	if(!$username || !preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username))
 	{
 		Error($langs["reg_emptyuser"],"register.php");
 	}
-	$password = SafeHtml($password);
-	$chkpass = SafeHtml($checkpass);
-	if(!$password)
+	if(!$password || strlen($password) < 6)
 	{
 		Error($langs["reg_emptypass"],"register.php");
 	}
@@ -22,15 +25,14 @@ if($act == "regok")
 	{
 		Error($langs["reg_difpass"],"register.php");
 	}
-	$email = SafeHtml($email);
-	if(!$email)
+	if(!$email || !filter_var($email, FILTER_VALIDATE_EMAIL))
 	{
 		Error($langs["reg_emptyemail"],"register.php");
 	}
-	if(!ereg("^[-a-zA-Z0-9_\.]+\@([0-9A-Za-z][0-9A-Za-z-]+\.)+[A-Za-z]{2,5}$",$email))
-	{
-		Error($langs["reg_erroremail"],"register.php");
-	}
+	
+	// 使用转义防止SQL注入
+	$username = mysql_real_escape_string($username);
+	$email = mysql_real_escape_string($email);
 	$check_user = $DB->qgGetOne("SELECT * FROM ".$prefix."user WHERE user='".$username."'");
 	if($check_user)
 	{

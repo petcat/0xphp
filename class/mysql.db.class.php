@@ -45,44 +45,46 @@ class qgSQL
 	{
 		if($dbconn)
 		{
-			$this->conn = mysql_pconnect($this->host,$this->user,$this->pass) or die(mysql_errno()." : ".mysql_error());
+			$this->conn = new mysqli($this->host,$this->user,$this->pass,$this->data);
 		}
 		else
 		{
-			$this->conn = mysql_connect($this->host,$this->user,$this->pass) or die(mysql_errno()." : ".mysql_error());
+			$this->conn = new mysqli($this->host,$this->user,$this->pass,$this->data);
+		}
+		
+		if ($this->conn->connect_error) {
+			die("连接失败: " . $this->conn->connect_error);
 		}
 
 		$mysql_version = $this->get_mysql_version();
 
 		if($mysql_version>"4.1")
 		{
-			mysql_query("SET NAMES 'utf8'",$this->conn);
+			$this->conn->set_charset("utf8");
 		}
 
 		if($mysql_version>"5.0.1")
 		{
-			mysql_query("SET sql_mode=''",$this->conn);
+			$this->conn->query("SET sql_mode=''");
 		}
-
-		mysql_select_db($this->data) or die(mysql_errno()." : ".mysql_error());
 	}
 
 	#[关闭数据库连接，当您使用持续连接时该功能失效]
 	function qgClose()
 	{
-		return mysql_close($this->conn);
+		return $this->conn->close();
 	}
 
 	#[兼容PHP5]
 	function __destruct()
 	{
-		return mysql_close($this->conn);
+		return $this->conn->close();
 	}
 
 	function qgQuery($sql,$type="ASSOC")
 	{
-		$this->rsType = $type != "ASSOC" ? ($type == "NUM" ? MYSQL_NUM : MYSQL_BOTH) : MYSQL_ASSOC;
-		$this->result = mysql_query($sql,$this->conn);
+		$this->rsType = $type != "ASSOC" ? ($type == "NUM" ? MYSQLI_NUM : MYSQLI_BOTH) : MYSQLI_ASSOC;
+		$this->result = $this->conn->query($sql);
 		$this->queryCount++;
 		if($this->result)
 		{
@@ -96,8 +98,8 @@ class qgSQL
 
 	function qgBigQuery($sql,$type="ASSOC")
 	{
-		$this->rsType = $type != "ASSOC" ? ($type == "NUM" ? MYSQL_NUM : MYSQL_BOTH) : MYSQL_ASSOC;
-		$this->result = mysql_unbuffered_query($sql,$this->conn);
+		$this->rsType = $type != "ASSOC" ? ($type == "NUM" ? MYSQLI_NUM : MYSQLI_BOTH) : MYSQLI_ASSOC;
+		$this->result = $this->conn->query($sql);
 		$this->queryCount++;
 		if($this->result)
 		{
@@ -123,7 +125,7 @@ class qgSQL
 			}
 		}
 		$rs = array();
-		while($rows = mysql_fetch_array($this->result,$this->rsType))
+		while($rows = $this->result->fetch_array($this->rsType))
 		{
 			$rs[] = $rows;
 		}
@@ -136,7 +138,7 @@ class qgSQL
 		{
 			$this->qgQuery($sql);
 		}
-		$rows = mysql_fetch_array($this->result,$this->rsType);
+		$rows = $this->result->fetch_array($this->rsType);
 		return $rows;
 	}
 
